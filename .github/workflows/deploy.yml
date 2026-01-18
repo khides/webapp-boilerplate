@@ -1,0 +1,118 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  AWS_REGION: ap-northeast-1
+  # TODO: プロジェクト名を変更 (terraform.tfvarsと一致させる)
+  PROJECT_NAME: myapp
+  # TODO: 環境名を変更 (必要に応じて)
+  ENVIRONMENT: prod
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # TODO: GitHub SecretsにAWS_ROLE_ARNを設定 (GitHub OIDC用IAMロールARN)
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-api
+          IMAGE_TAG: ${{ github.ref_name }}
+        run: |
+          cd apps/backend
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Update Lambda function
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-api
+          FUNCTION_NAME: ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-api
+        run: |
+          aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --image-uri $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+      - name: Wait for Lambda update
+        env:
+          FUNCTION_NAME: ${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-api
+        run: |
+          aws lambda wait function-updated --function-name $FUNCTION_NAME
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build frontend
+        run: pnpm --filter web build
+        env:
+          VITE_API_URL: ''  # Uses relative paths through CloudFront
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Deploy to S3
+        # TODO: GitHub SecretsにAWS_ACCOUNT_IDを設定 (AWSアカウントID)
+        run: |
+          aws s3 sync apps/web/dist s3://${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-static-${{ secrets.AWS_ACCOUNT_ID }}/ \
+            --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html" \
+            --exclude "*.json"
+
+          aws s3 cp apps/web/dist/index.html s3://${{ env.PROJECT_NAME }}-${{ env.ENVIRONMENT }}-static-${{ secrets.AWS_ACCOUNT_ID }}/ \
+            --cache-control "no-cache, no-store, must-revalidate"
+
+      - name: Invalidate CloudFront cache
+        # TODO: GitHub SecretsにCLOUDFRONT_DISTRIBUTION_IDを設定 (terraform outputから取得)
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/*"

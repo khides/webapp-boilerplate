@@ -1,0 +1,186 @@
+@import "tailwindcss";
+
+/* Theme configuration */
+@theme inline {
+  /* Border radius */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Font family */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Animation timing */
+  --duration-fast: 100ms;
+  --duration-normal: 150ms;
+  --duration-slow: 200ms;
+}
+
+/* Dark Theme (Default) */
+:root {
+  /* Surface Hierarchy */
+  --color-surface-0: oklch(0.10 0.006 250);
+  --color-surface-1: oklch(0.13 0.008 250);
+  --color-surface-2: oklch(0.16 0.010 250);
+  --color-surface-3: oklch(0.19 0.012 250);
+  --color-surface-4: oklch(0.22 0.014 250);
+
+  --color-background: var(--color-surface-1);
+  --color-foreground: oklch(0.95 0.01 250);
+
+  /* Primary - Blue */
+  --color-primary: oklch(0.60 0.15 250);
+  --color-primary-hover: oklch(0.65 0.15 250);
+  --color-primary-foreground: oklch(0.98 0.005 250);
+
+  /* Text Hierarchy */
+  --color-text-primary: oklch(0.95 0.01 250);
+  --color-text-secondary: oklch(0.75 0.02 250);
+  --color-text-tertiary: oklch(0.55 0.02 250);
+
+  /* Secondary */
+  --color-secondary: var(--color-surface-4);
+  --color-secondary-foreground: oklch(0.92 0.01 250);
+  --color-card: var(--color-surface-2);
+  --color-card-foreground: var(--color-text-primary);
+  --color-muted: var(--color-surface-3);
+  --color-muted-foreground: var(--color-text-secondary);
+
+  /* Semantic */
+  --color-success: oklch(0.72 0.15 155);
+  --color-warning: oklch(0.78 0.14 75);
+  --color-destructive: oklch(0.65 0.18 25);
+  --color-destructive-foreground: oklch(0.98 0.005 250);
+
+  /* Borders */
+  --color-border-subtle: oklch(0.25 0.015 250);
+  --color-border: oklch(0.30 0.020 250);
+  --color-border-strong: oklch(0.38 0.025 250);
+
+  /* Ring */
+  --color-ring: var(--color-primary);
+  --color-ring-offset: var(--color-surface-1);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.1), 0 1px 2px oklch(0 0 0 / 0.06);
+  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.1), 0 2px 4px oklch(0 0 0 / 0.06);
+  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.1), 0 4px 6px oklch(0 0 0 / 0.05);
+}
+
+/* Light Theme */
+:root.light,
+.light {
+  --color-surface-0: oklch(1.00 0.00 0);
+  --color-surface-1: oklch(0.98 0.003 250);
+  --color-surface-2: oklch(0.96 0.005 250);
+  --color-surface-3: oklch(0.94 0.008 250);
+  --color-surface-4: oklch(0.92 0.010 250);
+
+  --color-background: var(--color-surface-1);
+  --color-foreground: oklch(0.15 0.01 250);
+
+  --color-primary: oklch(0.50 0.18 250);
+  --color-primary-hover: oklch(0.45 0.18 250);
+  --color-primary-foreground: oklch(0.98 0.005 250);
+
+  --color-text-primary: oklch(0.15 0.01 250);
+  --color-text-secondary: oklch(0.35 0.02 250);
+  --color-text-tertiary: oklch(0.50 0.02 250);
+
+  --color-secondary: var(--color-surface-3);
+  --color-secondary-foreground: oklch(0.20 0.02 250);
+  --color-card: var(--color-surface-0);
+  --color-card-foreground: var(--color-text-primary);
+  --color-muted: var(--color-surface-3);
+  --color-muted-foreground: var(--color-text-secondary);
+
+  --color-success: oklch(0.55 0.18 155);
+  --color-warning: oklch(0.62 0.16 75);
+  --color-destructive: oklch(0.50 0.20 25);
+
+  --color-border-subtle: oklch(0.92 0.008 250);
+  --color-border: oklch(0.88 0.012 250);
+  --color-border-strong: oklch(0.82 0.015 250);
+
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px oklch(0 0 0 / 0.06), 0 2px 4px oklch(0 0 0 / 0.04);
+  --shadow-lg: 0 10px 15px oklch(0 0 0 / 0.06), 0 4px 6px oklch(0 0 0 / 0.03);
+}
+
+/* Base Styles */
+html {
+  color-scheme: dark;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+/* Utility Classes */
+.surface-0 { background-color: var(--color-surface-0); }
+.surface-1 { background-color: var(--color-surface-1); }
+.surface-2 { background-color: var(--color-surface-2); }
+.surface-3 { background-color: var(--color-surface-3); }
+.surface-4 { background-color: var(--color-surface-4); }
+
+/* Interactive States */
+button,
+[role="button"],
+a[href],
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

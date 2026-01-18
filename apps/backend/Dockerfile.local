@@ -1,0 +1,19 @@
+# Backend Dockerfile - Local Development
+FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
+
+WORKDIR /app
+
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies (production only)
+RUN uv sync --frozen --no-dev
+
+# Copy source code
+COPY src/ ./src/
+
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"]

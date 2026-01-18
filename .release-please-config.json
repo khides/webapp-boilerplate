@@ -1,0 +1,28 @@
+{
+  "release-type": "simple",
+  "include-v-in-tag": true,
+  "include-component-in-tag": false,
+  "packages": {
+    ".": {
+      "package-name": "webapp-boilerplate",
+      "release-type": "simple",
+      "extra-files": [
+        "package.json",
+        "apps/web/package.json",
+        {
+          "type": "toml",
+          "path": "apps/backend/pyproject.toml",
+          "jsonpath": "$.project.version"
+        },
+        {
+          "type": "generic",
+          "path": "apps/backend/src/version.py"
+        },
+        {
+          "type": "generic",
+          "path": "apps/web/src/version.ts"
+        }
+      ]
+    }
+  }
+}

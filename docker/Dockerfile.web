@@ -1,0 +1,23 @@
+FROM node:22-slim
+
+WORKDIR /app
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy workspace configuration
+COPY package.json pnpm-workspace.yaml ./
+COPY apps/web/package.json ./apps/web/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile || pnpm install
+
+# Copy source code
+COPY apps/web ./apps/web
+
+# Expose port
+EXPOSE 5173
+
+# Start development server
+# TODO: パッケージ名を変更 (web → プロジェクトのwebパッケージ名)
+CMD ["pnpm", "--filter", "web", "dev", "--host", "0.0.0.0"]
